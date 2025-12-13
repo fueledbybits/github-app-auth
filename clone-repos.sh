@@ -7,6 +7,28 @@ set -euo pipefail
 
 echo "=== GitHub Auth Toolkit - Repository Cloning ==="
 
+# Install git if it doesn't exist
+if ! command -v git &> /dev/null; then
+    echo "Git not found, installing..."
+    if command -v dnf &> /dev/null; then
+        dnf install -y git
+    elif command -v yum &> /dev/null; then
+        yum install -y git
+    elif command -v apt-get &> /dev/null; then
+        apt-get update && apt-get install -y git
+    elif command -v pacman &> /dev/null; then
+        pacman -S --noconfirm git
+    elif command -v zypper &> /dev/null; then
+        zypper install -y git
+    else
+        echo "Error: No supported package manager found. Please install git manually."
+        exit 1
+    fi
+    echo "Git installed successfully."
+else
+    echo "Git is already installed."
+fi
+
 # Configuration
 REPOS_FILE="${1:-repos.txt}"
 DEFAULT_DESTINATION="${2:-./repositories}"
