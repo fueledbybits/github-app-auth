@@ -1,0 +1,14 @@
+# GitHub Auth Toolkit - Repository Configuration Example
+# 
+# Format: user/repository destination (space or tab separated)
+# If no destination specified, uses default (./repositories/)
+
+# examples:
+
+# company/frontend opt/code/frontend
+# company/backend ./code/backend
+# company/infrastructure ./infra
+# company/documentation ./docs
+
+# Comments and empty lines are ignored
+# Use this format for your actual repos.txt file
