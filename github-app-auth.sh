@@ -7,6 +7,77 @@ set -euo pipefail
 
 echo "=== GitHub Auth Toolkit - Authentication ==="
 
+# Function to detect OS and install dependencies
+install_dependencies() {
+    local missing_deps=()
+    
+    # Check which dependencies are missing
+    for cmd in openssl jq curl base64; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            missing_deps+=("$cmd")
+        fi
+    done
+    
+    # If no missing dependencies, return
+    if [[ ${#missing_deps[@]} -eq 0 ]]; then
+        return 0
+    fi
+    
+    echo "Missing dependencies: ${missing_deps[*]}"
+    echo "Attempting to install automatically..."
+    
+    # Detect OS and package manager
+    if command -v dnf >/dev/null 2>&1; then
+        # RHEL/CentOS/Fedora with dnf
+        echo "Detected RHEL/CentOS/Fedora (dnf)"
+        sudo dnf install -y openssl jq curl coreutils
+    elif command -v yum >/dev/null 2>&1; then
+        # RHEL/CentOS with yum
+        echo "Detected RHEL/CentOS (yum)"
+        sudo yum install -y openssl jq curl coreutils
+    elif command -v apt >/dev/null 2>&1; then
+        # Debian/Ubuntu
+        echo "Detected Debian/Ubuntu (apt)"
+        sudo apt update && sudo apt install -y openssl jq curl coreutils
+    elif command -v pacman >/dev/null 2>&1; then
+        # Arch Linux
+        echo "Detected Arch Linux (pacman)"
+        sudo pacman -S --noconfirm openssl jq curl coreutils
+    elif command -v zypper >/dev/null 2>&1; then
+        # openSUSE
+        echo "Detected openSUSE (zypper)"
+        sudo zypper install -y openssl jq curl coreutils
+    elif command -v apk >/dev/null 2>&1; then
+        # Alpine Linux
+        echo "Detected Alpine Linux (apk)"
+        sudo apk add --no-cache openssl jq curl coreutils
+    else
+        echo "Error: Could not detect package manager"
+        echo "Please install manually:"
+        echo "  RHEL/CentOS: dnf install -y openssl jq curl coreutils"
+        echo "  Debian/Ubuntu: apt install -y openssl jq curl coreutils"
+        echo "  Arch: pacman -S openssl jq curl coreutils"
+        echo "  Alpine: apk add openssl jq curl coreutils"
+        exit 1
+    fi
+    
+    # Verify installation
+    echo "Verifying installation..."
+    for cmd in "${missing_deps[@]}"; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            echo "Error: Failed to install $cmd"
+            echo "Please install manually and try again"
+            exit 1
+        fi
+    done
+    
+    echo "✓ Dependencies installed successfully"
+    echo
+}
+
+# Check and install dependencies
+install_dependencies
+
 # Load configuration
 if [[ ! -f "./github-app.env" ]]; then
     echo "Error: github-app.env not found!"

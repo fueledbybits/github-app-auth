@@ -81,14 +81,39 @@ install_dependencies
 # Configuration
 SALT_VALUE="ghauth24"  # Max 16 chars for mkpasswd
 KEYS_DIR="./keys"
-PEM_FILE="$1"
 
-if [[ -z "$PEM_FILE" || ! -f "$PEM_FILE" ]]; then
+# Check if PEM file argument is provided
+if [[ $# -eq 0 ]]; then
+    echo "Error: Missing required PEM file argument"
+    echo ""
     echo "Usage: $0 <github-app-private-key.pem>"
     echo "Example: $0 ./my-github-app.pem"
     echo ""
+    echo "IMPORTANT: Make sure to select the correct PEM key file!"
+    echo "- Use the PRIVATE key file (ends with .pem)"
+    echo "- NOT the public key or certificate"
+    echo "- The file should contain '-----BEGIN RSA PRIVATE KEY-----' or similar"
+    echo ""
     echo "Get your GitHub App PEM key from:"
     echo "GitHub → Settings → Developer settings → GitHub Apps → Your App → Generate private key"
+    echo ""
+    echo "Available .pem files in current directory:"
+    find . -maxdepth 2 -name "*.pem" -type f 2>/dev/null | head -5 || echo "  (no .pem files found)"
+    exit 1
+fi
+
+PEM_FILE="$1"
+
+if [[ ! -f "$PEM_FILE" ]]; then
+    echo "Error: PEM file '$PEM_FILE' not found!"
+    echo ""
+    echo "IMPORTANT: Make sure to select the correct PEM key file!"
+    echo "- Use the PRIVATE key file (ends with .pem)"
+    echo "- NOT the public key or certificate"
+    echo "- The file should contain '-----BEGIN RSA PRIVATE KEY-----' or similar"
+    echo ""
+    echo "Available .pem files in current directory:"
+    find . -maxdepth 2 -name "*.pem" -type f 2>/dev/null | head -5 || echo "  (no .pem files found)"
     exit 1
 fi
 
