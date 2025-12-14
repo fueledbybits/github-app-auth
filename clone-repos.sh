@@ -116,8 +116,26 @@ clone_or_update_repo() {
         
         if [[ "$current_repo" == "$expected_repo" ]]; then
             echo "  ✓ Same repository, updating..."
+            # Ensure remote URL uses credentials file (no embedded token)
+            git remote set-url origin "https://github.com/$repo.git"
+            
+            # Handle local changes automatically
+            if ! git diff-index --quiet HEAD --; then
+                echo "  Local changes detected, stashing..."
+                git stash push -m "Auto-stash before update $(date)"
+            fi
+            
             if git pull; then
                 echo "  ✓ Updated successfully"
+                # Try to restore stashed changes if any
+                if git stash list | grep -q "Auto-stash before update"; then
+                    echo "  Attempting to restore local changes..."
+                    if git stash pop; then
+                        echo "  ✓ Local changes restored"
+                    else
+                        echo "  ⚠ Merge conflicts in local changes - check manually"
+                    fi
+                fi
             else
                 echo "  ⚠ Update failed, but continuing..."
             fi
@@ -142,6 +160,10 @@ clone_or_update_repo() {
             
             if git clone "https://x-access-token:$ACCESS_TOKEN@github.com/$repo.git" "$destination"; then
                 echo "  ✓ Cloned successfully"
+                # Configure remote URL WITHOUT token - let credentials file handle auth
+                cd "$destination"
+                git remote set-url origin "https://github.com/$repo.git"
+                cd - > /dev/null
             else
                 echo "  ✗ Clone failed: $repo"
                 return 1
@@ -159,6 +181,10 @@ clone_or_update_repo() {
         
         if git clone "https://x-access-token:$ACCESS_TOKEN@github.com/$repo.git" "$destination"; then
             echo "  ✓ Cloned successfully"
+            # Configure remote URL WITHOUT token - let credentials file handle auth
+            cd "$destination"
+            git remote set-url origin "https://github.com/$repo.git"
+            cd - > /dev/null
         else
             echo "  ✗ Clone failed: $repo"
             return 1

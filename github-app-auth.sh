@@ -194,9 +194,10 @@ fi
 
 echo "✓ Successfully obtained GitHub access token"
 
-# Configure git to use the token globally
+# Configure git to use the token globally for all GitHub repositories
 git config --global credential.helper store
 echo "https://x-access-token:$ACCESS_TOKEN@github.com" > ~/.git-credentials
+chmod 600 ~/.git-credentials
 
 # Export token for use by other scripts
 export GITHUB_ACCESS_TOKEN="$ACCESS_TOKEN"
