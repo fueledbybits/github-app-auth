@@ -32,11 +32,8 @@ fi
 COMMENT
 
 
-# Configuration
-REPOS_FILE="${1:-repos.txt}"
-DEFAULT_DESTINATION="${2:-./repositories}"
-
-if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+# Check for help first
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     echo "Usage: $0 [repos-file] [default-destination]"
     echo ""
     echo "Arguments:"
@@ -60,19 +57,38 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
     exit 0
 fi
 
+# Require repos file to be specified
+if [[ $# -eq 0 ]]; then
+    echo "❌ No repository file specified!"
+    echo ""
+    echo "💡 Usage: $0 <repos-file> [default-destination]"
+    echo "   Example: $0 repos.txt"
+    echo "   Example: $0 my-repos.txt /opt/code"
+    echo ""
+    echo "ℹ️  Run '$0 --help' for detailed information"
+    exit 1
+fi
+
+# Configuration
+REPOS_FILE="$1"
+DEFAULT_DESTINATION="${2:-./repositories}"
+
 if [[ ! -f "$REPOS_FILE" ]]; then
-    echo "Error: Repository file '$REPOS_FILE' not found!"
+    echo "❌ Repository file '$REPOS_FILE' not found!"
     echo ""
-    echo "Create a repos.txt file with format:"
-    echo "  user/repository:destination"
-    echo "  user/repository              # Uses default destination"
+    echo "📝 Please create a repository list file with this format:"
+    echo "   user/repository destination"
+    echo "   user/repository             # Uses default destination"
     echo ""
-    echo "Example repos.txt:"
-    echo "  microsoft/vscode:/opt/editors/vscode"
-    echo "  torvalds/linux:/usr/src/linux"
-    echo "  kubernetes/kubernetes"
+    echo "📋 Example repos.txt:"
+    echo "   microsoft/vscode /opt/editors/vscode"
+    echo "   torvalds/linux /usr/src/linux" 
+    echo "   kubernetes/kubernetes"
     echo ""
-    echo "Run: $0 --help for more information"
+    echo "💡 Usage: $0 [repos-file] [default-destination]"
+    echo "   Example: $0 my-repos.txt /opt/code"
+    echo ""
+    echo "ℹ️  Run '$0 --help' for detailed information"
     exit 1
 fi
 
