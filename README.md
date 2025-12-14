@@ -55,7 +55,18 @@ source ./github-app.env
 ./clone-repos.sh repos.txt
 ```
 
-That's it. Your repositories get cloned to the specified locations.
+Afterwards you can manage each repo individually by using normal git commands like `git pull origin main`.
+
+**Token Management:**
+- GitHub App tokens expire after 1 hour
+- When expired, simply run `git-auth` from anywhere to renew
+- All repositories will automatically use the new token
+- No need to update individual repositories manually
+
+**Available Commands:**
+- `git-auth` - Renew GitHub authentication token
+- `git-clone <repos-file>` - Clone/update all repositories from file
+
 
 ## How the repo list works
 

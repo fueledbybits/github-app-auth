@@ -209,9 +209,94 @@ echo "✓ Git configured for GitHub access"
 echo "✓ Token exported as GITHUB_ACCESS_TOKEN"
 echo "✓ Ready to clone repositories"
 
+# Set up convenient aliases
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ALIAS_LINE="alias git-auth='$SCRIPT_DIR/github-app-auth.sh'"
+ALIAS_LINE2="alias git-clone='$SCRIPT_DIR/clone-repos.sh'"
+
+# Determine which shell config file to use
+SHELL_CONFIG=""
+if [[ -n "${BASH_VERSION:-}" ]]; then
+    # Bash shell - try .bashrc first, then .bash_profile
+    if [[ -f ~/.bashrc ]]; then
+        SHELL_CONFIG="$HOME/.bashrc"
+    elif [[ -f ~/.bash_profile ]]; then
+        SHELL_CONFIG="$HOME/.bash_profile"
+    else
+        SHELL_CONFIG="$HOME/.bashrc"  # Create it
+    fi
+elif [[ -n "${ZSH_VERSION:-}" ]]; then
+    # Zsh shell
+    SHELL_CONFIG="$HOME/.zshrc"
+else
+    # Default/unknown shell - try common files
+    if [[ -f ~/.bashrc ]]; then
+        SHELL_CONFIG="$HOME/.bashrc"
+    elif [[ -f ~/.profile ]]; then
+        SHELL_CONFIG="$HOME/.profile"
+    else
+        SHELL_CONFIG="$HOME/.profile"  # Most universal
+    fi
+fi
+
+# Add aliases if not already present
+if ! grep -q "alias git-auth=" "$SHELL_CONFIG" 2>/dev/null; then
+    echo "" >> "$SHELL_CONFIG"
+    echo "# GitHub Auth Toolkit aliases" >> "$SHELL_CONFIG"
+    echo "$ALIAS_LINE" >> "$SHELL_CONFIG"
+    echo "$ALIAS_LINE2" >> "$SHELL_CONFIG"
+    echo "✓ Added aliases to $SHELL_CONFIG"
+else
+    echo "✓ Aliases already configured in $SHELL_CONFIG"
+fi
+
+# Try to create symlinks in a directory that's in PATH
+BIN_DIR=""
+for dir in /usr/local/bin /usr/bin ~/.local/bin ~/bin; do
+    if [[ ":$PATH:" == *":$dir:"* ]]; then
+        if [[ -w "$dir" ]] || { [[ "$dir" == /usr/* ]] && sudo -n true 2>/dev/null; }; then
+            BIN_DIR="$dir"
+            break
+        fi
+    fi
+done
+
+if [[ -n "$BIN_DIR" ]]; then
+    # Create symlinks for immediate access
+    if [[ "$BIN_DIR" == /usr/* ]]; then
+        # System directory - need sudo
+        if [[ ! -f "$BIN_DIR/git-auth" ]]; then
+            sudo ln -sf "$SCRIPT_DIR/github-app-auth.sh" "$BIN_DIR/git-auth" 2>/dev/null && \
+                echo "✓ Created system-wide 'git-auth' command"
+        fi
+        if [[ ! -f "$BIN_DIR/git-clone" ]]; then
+            sudo ln -sf "$SCRIPT_DIR/clone-repos.sh" "$BIN_DIR/git-clone" 2>/dev/null && \
+                echo "✓ Created system-wide 'git-clone' command"
+        fi
+    else
+        # User directory - no sudo needed
+        mkdir -p "$BIN_DIR" 2>/dev/null
+        if [[ ! -f "$BIN_DIR/git-auth" ]]; then
+            ln -sf "$SCRIPT_DIR/github-app-auth.sh" "$BIN_DIR/git-auth" 2>/dev/null && \
+                echo "✓ Created 'git-auth' command in $BIN_DIR"
+        fi
+        if [[ ! -f "$BIN_DIR/git-clone" ]]; then
+            ln -sf "$SCRIPT_DIR/clone-repos.sh" "$BIN_DIR/git-clone" 2>/dev/null && \
+                echo "✓ Created 'git-clone' command in $BIN_DIR"
+        fi
+    fi
+    echo "✓ Commands available immediately: 'git-auth' and 'git-clone'"
+else
+    echo "  Restart terminal or run 'source $SHELL_CONFIG' to use: git-auth, git-clone"
+fi
+
 # Clean up temporary PEM key
 rm -f "$temp_key"
 
 echo
-echo "Token expires in 1 hour. Re-run this script to refresh."
-echo "Next: ./clone-repos.sh your-repos.txt"
+echo "Token expires in 1 hour. Re-run with 'git-auth' to refresh."
+echo "Next: git-clone your-repos.txt"
+echo ""
+echo "Available commands:"
+echo "  git-auth          - Renew GitHub authentication"
+echo "  git-clone <file>  - Clone/update repositories"

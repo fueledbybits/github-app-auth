@@ -7,6 +7,7 @@ set -euo pipefail
 
 echo "=== GitHub Auth Toolkit - Repository Cloning ==="
 
+: <<'COMMENT'
 # Install git if it doesn't exist
 if ! command -v git &> /dev/null; then
     echo "Git not found, installing..."
@@ -28,6 +29,8 @@ if ! command -v git &> /dev/null; then
 else
     echo "Git is already installed."
 fi
+COMMENT
+
 
 # Configuration
 REPOS_FILE="${1:-repos.txt}"
