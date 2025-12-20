@@ -78,14 +78,17 @@ install_dependencies() {
 # Check and install dependencies
 install_dependencies
 
-# Load configuration
-if [[ ! -f "./github-app.env" ]]; then
-    echo "Error: github-app.env not found!"
-    echo "Run ./setup-secure-keys.sh first to create configuration."
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Load configuration from script directory
+if [[ ! -f "$SCRIPT_DIR/github-app.env" ]]; then
+    echo "Error: github-app.env not found in $SCRIPT_DIR!"
+    echo "Run $SCRIPT_DIR/setup-secure-keys.sh first to create configuration."
     exit 1
 fi
 
-source ./github-app.env
+source "$SCRIPT_DIR/github-app.env"
 
 # Validate required configuration
 if [[ -z "$GITHUB_APP_ID" || "$GITHUB_APP_ID" == "YOUR_APP_ID_HERE" ]]; then
@@ -102,7 +105,7 @@ fi
 
 if [[ ! -f "$GITHUB_APP_PRIVATE_KEY_ENCRYPTED" ]]; then
     echo "Error: Encrypted GitHub App private key not found at $GITHUB_APP_PRIVATE_KEY_ENCRYPTED"
-    echo "Run ./setup-secure-keys.sh first to encrypt your PEM key."
+    echo "Run $SCRIPT_DIR/setup-secure-keys.sh first to encrypt your PEM key."
     exit 1
 fi
 
