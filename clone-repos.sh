@@ -188,7 +188,7 @@ clone_or_update_repo() {
                 return 1
             fi
         else
-            echo "  ✗ Error: Directory '$destination' exists but is not a git repository"
+            echo "  ✗ Error: Directory '$destination' already exists  but is not a git repository, and it has files already."
             echo "    Please remove it manually or choose a different destination"
             echo "    Contents: $(ls -la "$destination" 2>/dev/null | wc -l) items"
             return 1

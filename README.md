@@ -28,18 +28,25 @@ git clone https://github.com/fueledbybits/github-app-auth.git
 cd github-app-auth
 chmod +x *.sh
 
-./setup-secure-keys.sh your-app-downloaded-key.pem
-```
+Download and copy your github app pem key.
+
+Generate Encrypted key
+    ./setup-secure-keys.sh your-app-downloaded-key.pem
 
 Enter a password when prompted. The script encrypts your key and creates a config file.
+
+Remove your Original Key:
+    rm your-app-downloaded-key.pem
+```
 
 ### 3. Add your App details
 
 Edit `github-app.env` and add your App ID and Client ID (both found in your GitHub App settings).
 
-### 4. List what to clone
+### 4. Create file with your repositories to clone.
 
 Create `repos.txt`:
+Add inf in the following format:
 ```
 user/repository /path/where/you/want/it
 
@@ -131,6 +138,9 @@ source ./github-app.env
 **"Different repository found"** - The destination folder already contains a different Git repository. Remove it manually or pick a different location.
 
 **"Directory exists but is not a git repository"** - There are files in the destination folder. The script won't delete them automatically - clean up manually.
+
+***fatal: repository 'https://github.com/#####.git/' not found***
+Please check if your app is allowed access into this repository.
 
 ## Why GitHub Apps instead of SSH keys
 
